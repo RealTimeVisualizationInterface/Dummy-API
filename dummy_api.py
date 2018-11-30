@@ -7,6 +7,7 @@ import threading
 import SocketServer
 import random
 import re
+import json
 
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
@@ -133,7 +134,7 @@ class Handler(BaseHTTPRequestHandler):
         cur.execute("select * from samples where DATETIME < %d and DATETIME > %d" % (time_now, time_past) )
         data = cur.fetchall() 
         conn.commit()
-        self.wfile.write(data)
+        self.wfile.write(json.dumps(data))
 
     def finish(self):
         self.log("Disconnected")
