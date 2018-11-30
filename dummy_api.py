@@ -2,7 +2,6 @@
 import hashlib
 import socket 
 import time
-import socket
 import threading
 import SocketServer
 import random
@@ -12,18 +11,13 @@ import json
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from SocketServer import ThreadingMixIn 
-import threading
 
 from StringIO import StringIO
 from threading import Thread 
-from random import *
-import time
 import logging
 import sys
 import os
-import json
 import sqlite3
-import csv
 
 #################################################################
 #################################################################
@@ -48,8 +42,9 @@ def populateDatabase():
     #11/19/18 0:00,MACHINE50,1,LINEdA,12,2.67,15.6,1.3884,0.2
 
     id = 1
-    for i in range(-60*60*24,2*60*60*24):
-        for j in random.randrange(5, 10):
+    for i in range(-60*60*24,60*60*24): # Range in seconds to generate the data
+        samples = []
+        for j in range(0, random.randrange(5, 10)): # Number of samples to generate per seccond
             date    = i
             equipment = "MACHINE50"
             line    = "LINEA"
@@ -58,8 +53,11 @@ def populateDatabase():
             target3 = random.random()*1
             target4 = random.random()*2
             target5 = random.random()*0.4-0.2
-            c.executemany("insert into samples values (?, ?, ?, ?, ?, ?, ?, ?, ?)", (date, equipment, id, line, target1, target2, target3, target4, target5))
-            id += 1
+            params  = (date, equipment, id, line, target1, target2, target3, target4, target5)
+            #print(params)
+            samples.append(params)
+            
+        c.executemany("insert into samples values (?, ?, ?, ?, ?, ?, ?, ?, ?)", samples)
 
         
     conn.commit()
