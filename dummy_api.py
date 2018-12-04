@@ -91,6 +91,42 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/samples":
             self.rest_samples( path, query)
+        elif path == "/api/settings":
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write("""[
+    {
+        name: "data1",
+        range: 60, // sec
+        limit: [-4,4],
+        refresh_rate: 1,
+    },
+    {
+        name: "data2",
+        range: 60, // sec
+        limit: [-4,4],
+        refresh_rate: 1,
+    },
+    {
+        name: "data3",
+        range: 60, // sec
+        limit: [-4,4],
+        refresh_rate: 1,
+    },
+    {
+        name: "data4",
+        range: 60, // sec
+        limit: [-4,4],
+        refresh_rate: 1,
+    },
+    {
+        name: "data5",
+        range: 60, // sec
+        limit: [-4,4],
+        refresh_rate: 1,
+    },
+]""")
+
         else:
             self.send_response(200)
             self.end_headers()
