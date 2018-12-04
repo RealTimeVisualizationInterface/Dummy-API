@@ -44,7 +44,7 @@ def populateDatabase():
     id = 1
     for i in range(-60*60*24,60*60*24): # Range in seconds to generate the data
         samples = []
-        for j in range(0, random.randrange(5, 10)): # Number of samples to generate per seccond
+        for j in range(0, 5): # Number of samples to generate per seccond
             date    = i
             equipment = "MACHINE50"
             line    = "LINEA"
@@ -63,6 +63,7 @@ def populateDatabase():
     conn.commit()
     conn.close()
 
+#if not os.path.exists('samples.db'):
 populateDatabase()
 #################################################################
 #################################################################
@@ -96,34 +97,34 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write("""[
     {
-        name: "data1",
-        range: 60, // sec
-        limit: [-4,4],
-        refresh_rate: 1,
+        'name': "data1",
+        'range': 60, // sec
+        'limit': [-4,4],
+        'refresh_rate': 1,
     },
     {
-        name: "data2",
-        range: 60, // sec
-        limit: [-4,4],
-        refresh_rate: 1,
+        'name': "data2",
+        'range': 60, // sec
+        'limit': [-4,4],
+        'refresh_rate': 1,
     },
     {
-        name: "data3",
-        range: 60, // sec
-        limit: [-4,4],
-        refresh_rate: 1,
+        'name': "data3",
+        'range': 60, // sec
+        'limit': [-4,4],
+        'refresh_rate': 1,
     },
     {
-        name: "data4",
-        range: 60, // sec
-        limit: [-4,4],
-        refresh_rate: 1,
+        'name': "data4",
+        'range': 60, // sec
+        'limit': [-4,4],
+        'refresh_rate': 1,
     },
     {
-        name: "data5",
-        range: 60, // sec
-        limit: [-4,4],
-        refresh_rate: 1,
+        'name': "data5",
+        'range': 60, // sec
+        'limit': [-4,4],
+        'refresh_rate': 1,
     },
 ]""")
 
@@ -149,11 +150,12 @@ class Handler(BaseHTTPRequestHandler):
         min_match = re_min.match(query)
         sec_match = re_sec.match(query)
 
-        time_now_s = time.localtime()
+        time_epoch = time.time()
+        time_now_s = time.gmtime(time_epoch)
         time_now = time_now_s.tm_hour*60*60+time_now_s.tm_min*60+time_now_s.tm_sec
-        time_past = time_now
-        
+        time_epoch_midnight = time_epoch - time_now
 
+        time_past = time_now
         if hour_match:
             time_past = time_now - 60*60*int(hour_match.group(1))
         elif min_match:
@@ -165,8 +167,12 @@ class Handler(BaseHTTPRequestHandler):
         
         conn = sqlite3.connect('samples.db')
         cur = conn.cursor()
-        cur.execute("select * from samples where DATETIME < %d and DATETIME > %d" % (time_now, time_past) )
-        data = cur.fetchall() 
+        cur.execute("select DATETIME+%d, EQUIPMENT, ID, LINE, TARGET1, TARGET2, TARGET3, TARGET4, TARGET5 from samples where DATETIME <= %d and  DATETIME > %d" % (time_epoch_midnight, time_now, time_past) )
+        data = cur.fetchall()
+        
+        #data_keys = ["datetime", "equipment", "id", "line", "target1", "target2", "target3", "target4", "target5"]
+        #data = [dict(zip(data_keys,v)) for v in data]
+
         conn.commit()
         self.wfile.write(json.dumps(data))
 
