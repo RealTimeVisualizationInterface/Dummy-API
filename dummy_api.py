@@ -84,6 +84,7 @@ class Handler(BaseHTTPRequestHandler):
         self.log("Connected {}:{}".format(self.client_address[0],self.client_address[1]))
 
     def do_GET(self):
+        
         path = self.path
         query = ""
 
@@ -94,6 +95,7 @@ class Handler(BaseHTTPRequestHandler):
             self.rest_samples( path, query)
         elif path == "/api/settings":
             self.send_response(200)
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write("""[
     {
@@ -129,7 +131,7 @@ class Handler(BaseHTTPRequestHandler):
 ]""")
 
         else:
-            self.send_response(200)
+            self.send_response(404)
             self.end_headers()
             message =  threading.currentThread().getName()
 
@@ -144,6 +146,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def rest_samples(self, path, query):
         self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()  
         
         hour_match = re_hour.match(query)
