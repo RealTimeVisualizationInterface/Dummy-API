@@ -15,6 +15,7 @@ from SocketServer import ThreadingMixIn
 from StringIO import StringIO
 from threading import Thread 
 import logging
+import math
 import sys
 import os
 import sqlite3
@@ -48,8 +49,8 @@ def populateDatabase():
             date    = i
             equipment = "MACHINE50"
             line    = "LINEA"
-            target1 = random.random()*100
-            target2 = random.random()*30-5
+            target1 = 5+math.sin(math.pi*i*0.02)*3 + random.uniform(-1.5,1.5)
+            target2 = random.random()*10-5
             target3 = random.random()*1
             target4 = random.random()*2
             target5 = random.random()*0.4-0.2
@@ -63,8 +64,8 @@ def populateDatabase():
     conn.commit()
     conn.close()
 
-#if not os.path.exists('samples.db'):
-populateDatabase()
+if not os.path.exists('samples.db'):
+    populateDatabase()
 #################################################################
 #################################################################
 
@@ -99,35 +100,32 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write("""[
     {
-        'name': "data1",
-        'range': 60, // sec
-        'limit': [-4,4],
-        'refresh_rate': 1,
+        "name": "data1",
+        "datap": "target1",
+        "target": "chart1",
+        "domain": 60,
+        "limit": [2,7],
+        "range": [0,8],
+        "refresh_rate": 1
     },
     {
-        'name': "data2",
-        'range': 60, // sec
-        'limit': [-4,4],
-        'refresh_rate': 1,
+        "name": "data2",
+        "datap": "target2",
+        "target": "chart2",
+        "domain": 60,
+        "limit": [-4,4],
+        "range": [-6,6],
+        "refresh_rate": 1
     },
     {
-        'name': "data3",
-        'range': 60, // sec
-        'limit': [-4,4],
-        'refresh_rate': 1,
-    },
-    {
-        'name': "data4",
-        'range': 60, // sec
-        'limit': [-4,4],
-        'refresh_rate': 1,
-    },
-    {
-        'name': "data5",
-        'range': 60, // sec
-        'limit': [-4,4],
-        'refresh_rate': 1,
-    },
+        "name": "data3",
+        "datap": "target3",
+        "target": "chart3",
+        "domain": 60,
+        "limit": [-4,4],
+        "range": [-6,6],
+        "refresh_rate": 1
+    }
 ]""")
 
         else:
@@ -173,8 +171,8 @@ class Handler(BaseHTTPRequestHandler):
         cur.execute("select DATETIME+%d, EQUIPMENT, ID, LINE, TARGET1, TARGET2, TARGET3, TARGET4, TARGET5 from samples where DATETIME <= %d and  DATETIME > %d" % (time_epoch_midnight, time_now, time_past) )
         data = cur.fetchall()
         
-        #data_keys = ["datetime", "equipment", "id", "line", "target1", "target2", "target3", "target4", "target5"]
-        #data = [dict(zip(data_keys,v)) for v in data]
+        data_keys = ["datetime", "equipment", "id", "line", "target1", "target2", "target3", "target4", "target5"]
+        data = [dict(zip(data_keys,v)) for v in data]
 
         conn.commit()
         self.wfile.write(json.dumps(data))
